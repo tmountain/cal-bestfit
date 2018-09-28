@@ -6,7 +6,7 @@
 
 (def hours    8)
 (def minutes  (* hours 60))
-(def start-on 30)
+(def start-on 15)
 (def padding  15)
 (def duration 60)
 
@@ -60,17 +60,19 @@
   "Returns a boolean indicating whether the points in a given
    set of tuples overlap. Comparisons of equal value are considered
    to be non-overlapping."
-  [xs]
-  (let [[h & tail] xs
-        [x y] h
-        x-btw (map #(between? x %) tail)
-        y-btw (map #(between? y %) tail)
-        has-overlap (some true? (concat x-btw y-btw))]
-    (if (empty? tail)
+  [pairs]
+  (loop [todo (sort-by first pairs), prev [], found []]
+    (if (empty? todo)
       false
-      (if has-overlap
-        true
-        (recur tail)))))
+      ; first elem
+      (if (empty? prev)
+        (recur (rest todo) (first todo) found)
+        (let [[h & tail] todo
+              [e1 e2] h
+              [l1 l2] prev]
+          (if (< e1 l2)
+            true
+            (recur tail h found)))))))
 
 (def not-overlap? (complement overlap?))
 
